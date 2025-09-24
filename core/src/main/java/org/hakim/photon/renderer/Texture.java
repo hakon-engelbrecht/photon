@@ -49,6 +49,10 @@ public class Texture {
         }
     }
 
+    public int getTextureUnit() {
+        return this.textureUnit;
+    }
+
     public void bind() {
         glActiveTexture(this.textureUnit);
         glBindTexture(GL_TEXTURE_2D, this.handle);

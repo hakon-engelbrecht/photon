@@ -10,8 +10,8 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class AppLayer implements Layer {
 
-    private final ShaderProgram shader;
-    private final VertexArray vertexArray;
+    private ShaderProgram shader;
+    private VertexArray vertexArray;
     private final Texture brickTexture;
     private final Texture faceTexture;
     private final Camera camera;
@@ -31,7 +31,25 @@ public class AppLayer implements Layer {
 
     public AppLayer() {
 
-        // create vertex buffer
+        VertexBuffer vertexBuffer = getVertexBuffer();
+        createShader();
+        initializeVertexArray(vertexBuffer);
+        setTextureParameters();
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glEnable(GL_DEPTH_TEST);
+
+        this.brickTexture = new Texture("wall.jpg", GL_TEXTURE0);
+        this.faceTexture = new Texture("kimi.jpg", GL_TEXTURE1);
+
+        this.camera = new Camera(
+                new Vector3f(0.0f, 0.0f, 3.0f),
+                new Vector3f(0.0f, 0.0f, 0.0f),
+                new Vector3f(0.0f, 1.0f, 0.0f)
+        );
+    }
+
+    private static VertexBuffer getVertexBuffer() {
         float[] vertices = {
                 -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                 0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
@@ -75,19 +93,22 @@ public class AppLayer implements Layer {
                 -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                 -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f
         };
-        VertexBuffer vertexBuffer = new VertexBuffer(vertices);
+        return new VertexBuffer(vertices);
+    }
 
-        // create shader
+    private void createShader() {
         int vertexShader = ShaderUtils.createVertexShader(this.getClass().getClassLoader().getResource("shaders/vertexShader.glsl"));
         int fragmentShader = ShaderUtils.createFragmentShader(this.getClass().getClassLoader().getResource("shaders/fragmentShader.glsl"));
         this.shader = new ShaderProgram();
         this.shader.attachShader(vertexShader, GL_VERTEX_SHADER);
         this.shader.attachShader(fragmentShader, GL_FRAGMENT_SHADER);
         this.shader.link();
+    }
 
+    private void initializeVertexArray(VertexBuffer buffer) {
         this.vertexArray = new VertexArray();
         this.vertexArray.bind();
-        vertexBuffer.bind();
+        buffer.bind();
 
         // position attribute
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * Float.BYTES, 0);
@@ -100,7 +121,9 @@ public class AppLayer implements Layer {
         // texture coordinates
         glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * Float.BYTES, 6 * Float.BYTES);
         glEnableVertexAttribArray(2);
+    }
 
+    private void setTextureParameters() {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         float[] borderColor = {1.0f, 1.0f, 0.0f, 1.0f};
@@ -109,18 +132,6 @@ public class AppLayer implements Layer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        glEnable(GL_DEPTH_TEST);
-
-        this.brickTexture = new Texture("wall.jpg", GL_TEXTURE0);
-        this.faceTexture = new Texture("kimi.jpg", GL_TEXTURE1);
-
-        this.camera = new Camera(
-                new Vector3f(0.0f, 0.0f, 3.0f),
-                new Vector3f(0.0f, 0.0f, 0.0f),
-                new Vector3f(0.0f, 1.0f, 0.0f)
-        );
     }
 
     @Override

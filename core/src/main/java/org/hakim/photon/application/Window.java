@@ -1,5 +1,7 @@
 package org.hakim.photon.application;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hakim.photon.specification.WindowSpecification;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
@@ -17,16 +19,22 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 public class Window {
 
+    private static final Logger logger = LogManager.getLogger(Window.class);
+
     private final long handle;
 
     public Window(WindowSpecification windowSpecification) {
+        logger.info("Creating application window...");
 
+        // print errors to stderr
         GLFWErrorCallback.createPrint(System.err).set();
 
+        // initialize glfw
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialize GLFW");
         }
 
+        // set window hints
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
@@ -43,6 +51,8 @@ public class Window {
             throw new RuntimeException("Failed to create the GLFW window");
         }
         glfwMakeContextCurrent(handle);
+
+        logger.debug("Created GLFW context");
 
         GL.createCapabilities();
 
@@ -76,8 +86,13 @@ public class Window {
         glfwSetFramebufferSizeCallback(handle, (window, width, height) -> {
             glViewport(0, 0, width, height);
         });
+
+        logger.debug("Initialized GL");
+
         glfwSwapInterval(1);
         glfwShowWindow(handle);
+
+        logger.info("Window created successfully");
     }
 
     public boolean shouldClose() {
@@ -93,9 +108,11 @@ public class Window {
     }
 
     public void dispose() {
+        logger.debug("Disposing GLFW window");
         glfwFreeCallbacks(handle);
         glfwDestroyWindow(handle);
         glfwTerminate();
         Objects.requireNonNull(glfwSetErrorCallback(null)).free();
+        logger.debug("Window disposed successfully");
     }
 }
