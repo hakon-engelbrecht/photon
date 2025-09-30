@@ -115,4 +115,12 @@ public class Window {
         Objects.requireNonNull(glfwSetErrorCallback(null)).free();
         logger.debug("Window disposed successfully");
     }
+
+    public boolean getKeyPressed(int key) {
+        return glfwGetKey(handle, key) == GLFW_PRESS;
+    }
+
+    public long getHandle() {
+        return this.handle;
+    }
 }

@@ -8,6 +8,8 @@ import org.hakim.photon.specification.ApplicationSpecification;
  */
 public class PhotonMain
 {
+    public static final int DEFAULT_WIDTH = 1920;
+    public static final int DEFAULT_HEIGHT = 1080;
 
     /** reference to the app singleton */
     private static Application app;
@@ -18,8 +20,8 @@ public class PhotonMain
 
     public static void main( String[] args ) {
         ApplicationSpecification appSpec = new ApplicationSpecification("Photon");
-        appSpec.getWindowSpecification().setWidth(1920);
-        appSpec.getWindowSpecification().setHeight(1080);
+        appSpec.getWindowSpecification().setWidth(DEFAULT_WIDTH);
+        appSpec.getWindowSpecification().setHeight(DEFAULT_HEIGHT);
 
         try {
             app = new Application(appSpec);

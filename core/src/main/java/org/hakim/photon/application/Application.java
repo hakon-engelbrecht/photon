@@ -71,6 +71,15 @@ public class Application {
     }
 
     /**
+     * Getter for the app window.
+     *
+     * @return window of this app
+     */
+    public Window getWindow() {
+        return this.window;
+    }
+
+    /**
      * Runs the main loop of the application.
      * This will update all layers each cycle and then render each layer.
      */
@@ -93,8 +102,8 @@ public class Application {
             }
 
             // calculate time since last frame
-            double currentTime = this.getTime();
-            double timestep = Math.clamp(currentTime - lastTime, 0.0001, 1.0);
+            float currentTime = this.getTime();
+            float timestep = (float) Math.clamp(currentTime - lastTime, 0.0001, 1.0);
             lastTime = currentTime;
             logger.debug("Frame time {}", timestep);
 

@@ -1,14 +1,20 @@
 package org.hakim.photon;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hakim.photon.application.Layer;
+import org.hakim.photon.application.Window;
 import org.hakim.photon.renderer.*;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
+import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 
 public class AppLayer implements Layer {
+
+    private static final Logger logger = LogManager.getLogger(AppLayer.class);
 
     private ShaderProgram shader;
     private VertexArray vertexArray;
@@ -44,9 +50,20 @@ public class AppLayer implements Layer {
 
         this.camera = new Camera(
                 new Vector3f(0.0f, 0.0f, 3.0f),
-                new Vector3f(0.0f, 0.0f, 0.0f),
-                new Vector3f(0.0f, 1.0f, 0.0f)
+                new Vector3f(0.0f, 1.0f, 0.0f),
+                new Vector3f(1.0f, 0.0f, 0.0f),
+                new Vector3f(0.0f, 1.0f, 0.0f),
+                PhotonMain.DEFAULT_WIDTH,
+                PhotonMain.DEFAULT_HEIGHT
         );
+
+        glfwSetInputMode(PhotonMain.getApp().getWindow().getHandle(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        glfwSetCursorPosCallback(PhotonMain.getApp().getWindow().getHandle(), (window, x, y) -> {
+           this.camera.processMouseMovement((float) x, (float) y, true);
+        });
+        glfwSetScrollCallback(PhotonMain.getApp().getWindow().getHandle(), (window, x, y) -> {
+            this.camera.processMouseScroll((float) y);
+        });
     }
 
     private static VertexBuffer getVertexBuffer() {
@@ -134,9 +151,28 @@ public class AppLayer implements Layer {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     }
 
+    private void processInput(float delta) {
+        if (PhotonMain.getApp().getWindow().getKeyPressed(GLFW_KEY_W)) {
+            this.camera.processKeyboardInput(Camera.CameraMovement.FORWARD, delta);
+        }
+
+        if (PhotonMain.getApp().getWindow().getKeyPressed(GLFW_KEY_S)) {
+            this.camera.processKeyboardInput(Camera.CameraMovement.BACKWARD, delta);
+        }
+
+        if (PhotonMain.getApp().getWindow().getKeyPressed(GLFW_KEY_A)) {
+            this.camera.processKeyboardInput(Camera.CameraMovement.LEFT, delta);
+        }
+
+        if (PhotonMain.getApp().getWindow().getKeyPressed(GLFW_KEY_D)) {
+            this.camera.processKeyboardInput(Camera.CameraMovement.RIGHT, delta);
+        }
+    }
+
     @Override
-    public void onUpdate(double delta) {
-        // TODO nothing for now
+    public void onUpdate(float delta) {
+        processInput(delta);
+        logger.debug("Camera position: {}", this.camera.getPosition());
     }
 
     @Override
@@ -150,12 +186,6 @@ public class AppLayer implements Layer {
         Matrix4f projection = new Matrix4f().perspective((float) Math.toRadians(45.0), 1920.0f / 1080.0f, 0.1f, 100.0f);
 
         this.shader.setUniform("projection", projection);
-
-        float radius = 10.0f;
-        float camX = (float) Math.sin(PhotonMain.getApp().getTime()) * radius;
-        float camZ = (float) Math.cos(PhotonMain.getApp().getTime()) * radius;
-        this.camera.setPosition(new Vector3f(camX, 0.0f, camZ));
-
         this.shader.setUniform("view", this.camera.getViewMatrix());
 
         this.vertexArray.bind();

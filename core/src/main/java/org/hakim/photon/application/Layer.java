@@ -16,7 +16,7 @@ public interface Layer {
      *
      * @param delta time since last frame
      */
-    default void onUpdate(double delta) {};
+    default void onUpdate(float delta) {};
 
     /**
      * Renders the contents of the layer.
